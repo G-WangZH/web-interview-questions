@@ -1,5 +1,6 @@
-# JavaScript手写代码题
+# JavaScript常见手写代码题
 ## 实现map方法
+实现
 ```javascript
 // 方法1：
 // thisArg参数就是用来改变回调函数内部this的
@@ -22,6 +23,7 @@ Array.prototype.myMap = function (fn, thisArg) {
 ```
 ## 实现reduce方法
 ```javascript
+// 实现
 Array.prototype.myReduce = function(fn, initValue) {
     // 边界条件判断
     if(typeof fn !== 'function') {
@@ -48,7 +50,7 @@ Array.prototype.myReduce = function(fn, initValue) {
 
 ## 防抖函数
 ```javascript
-// 防抖
+// 实现
 //参数func：需要防抖的函数
 //参数delayTime：延时时长，单位ms
 function debounce(func, delayTime) {
@@ -151,6 +153,7 @@ console.log(newObj.meta.ary[2] === source.meta.ary[2]);
 ```
 ## 实现new函数
 ```javascript
+// 实现
 function mynew(Func, ...args) {
     // 1.创建一个新对象
     const obj = {};
@@ -249,8 +252,37 @@ let time = setInterval(() => {
 }, 1000);
 ```
 ## 柯西化函数
+柯里化（currying） 指的是将一个多参数的函数拆分成一系列函数，每个拆分后的函数都只接受一个参数。
 ```javascript
+// 函数求和
+function sumFn(...rest) {
+    return rest.reduce((a, b) => a + b);
+}
+// 柯里化函数
+var currying = function (func) {
+    // 保存所有传递的参数
+    const args = [];
+    return function result(...rest) {
+        // 最后一步没有传递参数，如下例子
+        if(rest.length === 0) {
+            return func(...args);
+        } else {
+            // 中间过程将参数push到args
+            args.push(...rest);
+            return result; // 链式调用
+        }
+    }
+}
 
+// 测试
+currying(sumFn)(1)(2)(3)(4)(); // 10
+currying(sumFn)(1, 2, 3)(4)(); // 10
+
+
+// es6 实现
+function curry(fn, ...args) {
+  return fn.length <= args.length ? fn(...args) : curry.bind(null, fn, ...args);
+}
 ```
 ## 实现instanceof
 ` instanceof `运算符用于检测构造函数的` prototype `属性是否出现在某个实例对象的原型链上。
@@ -273,11 +305,66 @@ console.log(isInstanceOf(child, Parent), isInstanceOf(child, Child), isInstanceO
 // true true false
 
 ```
-## 实现promise.race
-```javascript
-
-```
 ## 实现promise.all
+#### 1) 核心思路
+接收一个 Promise 实例的数组或具有 Iterator 接口的对象作为参数
+这个方法返回一个新的 promise 对象，
+遍历传入的参数，用Promise.resolve()将参数"包一层"，使其变成一个promise对象
+参数所有回调成功才是成功，返回值数组与参数顺序一致
+参数数组其中一个失败，则触发失败状态，第一个触发失败的 Promise 错误信息作为 Promise.all 的错误信息。
+#### 2）实现代码
+一般来说，Promise.all 用来处理多个并发请求，也是为了页面数据构造的方便，将一个页面所用到的在不同接口的数据一起请求过来，不过，如果其中一个接口失败了，多个请求也就失败了，页面可能啥也出不来，这就看当前页面的耦合程度了
 ```javascript
-
+function promiseAll(promises) {
+  return new Promise(function(resolve, reject) {
+    if(!Array.isArray(promises)){
+        throw new TypeError(`argument must be a array`)
+    }
+    var resolvedCounter = 0;
+    var promiseNum = promises.length;
+    var resolvedResult = [];
+    for (let i = 0; i < promiseNum; i++) {
+      Promise.resolve(promises[i]).then(value=>{
+        resolvedCounter++;
+        resolvedResult[i] = value;
+        if (resolvedCounter == promiseNum) {
+            return resolve(resolvedResult)
+          }
+      },error=>{
+        return reject(error)
+      })
+    }
+  })
+}
+// 测试
+let p1 = new Promise(function (resolve, reject) {
+    setTimeout(function () {
+        resolve(1)
+    }, 1000)
+})
+let p2 = new Promise(function (resolve, reject) {
+    setTimeout(function () {
+        resolve(2)
+    }, 2000)
+})
+let p3 = new Promise(function (resolve, reject) {
+    setTimeout(function () {
+        resolve(3)
+    }, 3000)
+})
+promiseAll([p3, p1, p2]).then(res => {
+    console.log(res) // [3, 1, 2]
+})
 ```
+## 实现promise.race
+该方法的参数是` Promise `实例数组, 然后其` then `注册的回调方法是数组中的某一个 Promise 的状态变为` fulfilled `的时候就执行. 因为 Promise 的状态只能改变一次, 那么我们只需要把` Promise.race `中产生的 Promise 对象的` resolve `方法, 注入到数组中的每一个 Promise 实例中的回调函数中即可.
+```javascript
+Promise.race = function (args) {
+  return new Promise((resolve, reject) => {
+    for (let i = 0, len = args.length; i < len; i++) {
+      args[i].then(resolve, reject)
+    }
+  })
+}
+```
+
