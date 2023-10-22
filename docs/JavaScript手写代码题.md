@@ -19,7 +19,21 @@ Array.prototype.myMap = function (fn, thisArg) {
     return res;
 };
 
-// 方法2：
+// 方法2：用reduce实现map方法
+Array.prototype.myMap = function(fn, thisArg){
+    if (this === null) {
+        throw new TypeError("this is null or not defined");
+    }
+    if (typeof fn !== "function") {
+        throw new TypeError(fn + " is not a function");
+    }
+    var res = [];
+    this.reduce(function(pre, cur, index, arr){
+            return res.push(fn.call(thisArg, cur, index, arr));
+    }, []);
+    return res;
+}
+
 ```
 ## 实现reduce方法
 ```javascript
@@ -316,7 +330,7 @@ console.log(isInstanceOf(child, Parent), isInstanceOf(child, Child), isInstanceO
 一般来说，Promise.all 用来处理多个并发请求，也是为了页面数据构造的方便，将一个页面所用到的在不同接口的数据一起请求过来，不过，如果其中一个接口失败了，多个请求也就失败了，页面可能啥也出不来，这就看当前页面的耦合程度了
 ```javascript
 function promiseAll(promises) {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     if(!Array.isArray(promises)){
         throw new TypeError(`argument must be a array`)
     }
