@@ -64,3 +64,77 @@ function flatten(obj) {
     return res;
 }
 ```
+# 树
+## 列表转化树
+题目： 输入一组列表如下，转化成树形结构，如下：
+```javascript
+[
+  { id: 1, title: "child1", parentId: 0 },
+  { id: 2, title: "child2", parentId: 0 },
+  { id: 3, title: "child1_1", parentId: 1 },
+  { id: 4, title: "child1_2", parentId: 1 },
+  { id: 5, title: "child2_1", parentId: 2 }
+]
+
+// 转化为：
+tree=[
+  {：
+    "id": 1,
+    "title": "child1",
+    "parentId": 0,
+    "children": [
+      {
+        "id": 3,
+        "title": "child1_1",
+        "parentId": 1
+      },
+      {
+        "id": 4,
+        "title": "child1_2",
+        "parentId": 1
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "child2",
+    "parentId": 0,
+    "children": [
+      {
+        "id": 5,
+        "title": "child2_1",
+        "parentId": 2
+      }
+    ]
+  }
+]
+```
+
+**使用对象存储数据, 典型的空间换时间**，时间复杂度为O(n)、空间复杂度为O(n)，代码实现：
+```javascript
+// 效率最高的一种方式
+function listToTree(data) {
+    // map来存储数据，res为最终结果
+    const [map, res] = [{}, []];
+    // 遍历原始数据data，存到map中，id为key，值为数据
+    for (let item of data) {
+        map[item.id] = item;
+    }
+    // 再次遍历data
+    for (let i of data) {
+        // 通过map获取每一项的parent的数据
+        let parent = map[i.parentId];
+        if(parent) {
+            // 判断父节点的children是否存在，如果不存在设置初始值[], 存在直接push
+            (parent.children || (parent.children = [])).push(i);
+        } else {
+            // parent找不到对应值，说明是根节点，直接插入到数组中
+            res.push(i);
+        }
+    }
+    return res;
+}
+```
+## 广度优先遍历
+
+## 深度优先遍历
